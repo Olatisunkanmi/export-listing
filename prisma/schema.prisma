@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ListingType {
+  RENT
+  SALE
+  SHORTLET
+}
+
+model Agent {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  password  String
+  name      String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  listings  Listing[]
+  sessions  Session[]
+
+  @@map("agents")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  agentId   String
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([agentId])
+  @@map("sessions")
+}
+
+model Listing {
+  id        String      @id @default(uuid())
+  title     String
+  price     Float
+  type      ListingType
+  bedrooms  Int
+  latitude  Float
+  longitude Float
+  address   String?
+  agentId   String
+  agent     Agent       @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([type])
+  @@index([price])
+  @@index([bedrooms])
+  @@index([agentId])
+  @@map("listings")
+}
